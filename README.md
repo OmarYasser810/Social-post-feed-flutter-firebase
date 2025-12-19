@@ -1,16 +1,10 @@
 # social_post_feed
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+a. A minimal version of a social media feed with public and private feed.
+b. Key Features:
+    i. Users can create posts with text and (optional) images
+    ii. Feed shows posts from all users or followed users
+    iii. Like and Comment systems
+    iv. Realtime updates using Firestore snapshots or Realtime DB
+    v. User profiles with name, photo, bio.
+    vi. Follow/unfollow system.
+    vii. Login/Register via Firebase Auth
