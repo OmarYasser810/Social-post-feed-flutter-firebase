@@ -1,10 +1,22 @@
-# social_post_feed
-a. A minimal version of a social media feed with public and private feed.
-b. Key Features:
-    i. Users can create posts with text and (optional) images
-    ii. Feed shows posts from all users or followed users
-    iii. Like and Comment systems
-    iv. Realtime updates using Firestore snapshots or Realtime DB
-    v. User profiles with name, photo, bio.
-    vi. Follow/unfollow system.
-    vii. Login/Register via Firebase Auth
+lib/
+├── main.dart
+├── models/
+│   ├── user_model.dart
+│   ├── post_model.dart
+│   └── comment_model.dart
+├── services/
+│   ├── auth_service.dart
+│   └── firestore_service.dart
+├── screens/
+│   ├── auth/
+│   │   ├── login_screen.dart
+│   │   └── register_screen.dart
+│   ├── feed/
+│   │   ├── feed_screen.dart
+│   │   └── create_post_screen.dart
+│   └── profile/
+│       ├── profile_screen.dart
+│       └── edit_profile_screen.dart
+└── widgets/
+    ├── post_card.dart
+    └── comment_item.dart
