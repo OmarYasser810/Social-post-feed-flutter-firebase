@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:social_post_feed/firebase_options.dart';
 import 'package:social_post_feed/models/user_model.dart';
 import 'package:social_post_feed/services/auth_service.dart';
-import 'package:social_post_feed/services/firestore_service.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,7 +23,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
   final _currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
-  bool _isFollowing = false;
   bool _isLoading = false;
 
   @override
@@ -51,12 +50,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return Center(child: CircularProgressIndicator());
           }
 
+          if (snapshot.hasError) {
+            print('Profile error: ${snapshot.error}');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 60, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text('Error loading profile'),
+                  SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {}); // Trigger rebuild
+                    },
+                    child: Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
           if (!snapshot.hasData || snapshot.data == null) {
             return Center(child: Text('User not found'));
           }
 
           final user = snapshot.data!;
-          _isFollowing = user.isFollowedBy(_currentUserId ?? '');
+          final isFollowing = user.followers.contains(_currentUserId ?? '');
 
           return SingleChildScrollView(
             child: Column(
@@ -141,10 +161,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )
                       else
                         ElevatedButton(
-                          onPressed: _isLoading ? null : () => _toggleFollow(user),
+                          onPressed: _isLoading ? null : () => _toggleFollow(user, isFollowing),
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(double.infinity, 45),
-                            backgroundColor: _isFollowing ? Colors.grey : Colors.blue,
+                            backgroundColor: isFollowing ? Colors.grey : Colors.blue,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -159,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 )
                               : Text(
-                                  _isFollowing ? 'Unfollow' : 'Follow',
+                                  isFollowing ? 'Unfollow' : 'Follow',
                                   style: TextStyle(fontSize: 16),
                                 ),
                         ),
@@ -290,13 +310,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _toggleFollow(UserModel user) async {
+  Future<void> _toggleFollow(UserModel user, bool currentlyFollowing) async {
     if (_currentUserId == null) return;
 
     setState(() => _isLoading = true);
 
     bool success;
-    if (_isFollowing) {
+    if (currentlyFollowing) {
       success = await _firestoreService.unfollowUser(
         currentUserId: _currentUserId!,
         targetUserId: user.uid,
@@ -312,12 +332,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
     setState(() => _isLoading = false);
 
-    if (success) {
-      setState(() => _isFollowing = !_isFollowing);
-    } else {
+    if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to ${_isFollowing ? "unfollow" : "follow"} user'),
+          content: Text('Failed to ${currentlyFollowing ? "unfollow" : "follow"} user'),
           backgroundColor: Colors.red,
         ),
       );

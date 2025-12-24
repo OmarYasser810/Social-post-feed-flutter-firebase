@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:social_post_feed/firebase_options.dart';
 import 'package:social_post_feed/screens/feed/create_post_screen.dart';
 import 'package:social_post_feed/screens/profile/profile_screen.dart';
-import 'package:social_post_feed/services/firestore_service.dart';
 import 'package:social_post_feed/widgets/post_card.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -25,6 +25,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    print('FeedScreen initialized for user: $_currentUserId');
     _loadFollowing();
   }
 
@@ -35,7 +36,10 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _loadFollowing() async {
+    print('_loadFollowing called');
+    
     if (_currentUserId == null) {
+      print('No current user ID');
       setState(() => _isLoadingFollowing = false);
       return;
     }
@@ -43,20 +47,24 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
     setState(() => _isLoadingFollowing = true);
 
     try {
+      print('Fetching user data for: $_currentUserId');
       final user = await _firestoreService.getUser(_currentUserId!);
+      
       if (user != null && mounted) {
+        print('User found. Following: ${user.following}');
         setState(() {
           _followingIds = user.following;
           _isLoadingFollowing = false;
         });
       } else if (mounted) {
+        print('User not found or widget unmounted');
         setState(() {
           _followingIds = [];
           _isLoadingFollowing = false;
         });
       }
     } catch (e) {
-      print('Error loading following: $e');
+      print('ERROR loading following: $e');
       if (mounted) {
         setState(() {
           _followingIds = [];
