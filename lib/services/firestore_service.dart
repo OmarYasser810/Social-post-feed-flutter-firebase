@@ -280,7 +280,6 @@ class FirestoreService {
     return _firestore
         .collection('comments')
         .where('postId', isEqualTo: postId)
-        .orderBy('createdAt', descending: false)
         .snapshots();
   }
 

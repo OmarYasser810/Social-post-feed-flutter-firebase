@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import '../../services/firestore_service.dart';
+import 'package:social_post_feed/services/firestore_service.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({Key? key}) : super(key: key);
@@ -48,6 +47,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       text: _textController.text.trim(),
     );
 
+    if (!mounted) return;
+    
     setState(() => _isLoading = false);
 
     if (success) {

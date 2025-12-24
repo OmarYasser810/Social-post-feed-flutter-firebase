@@ -22,13 +22,30 @@ class UserModel {
   // Create UserModel from Firestore document
   factory UserModel.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    
+    // Safely convert followers and following lists
+    List<String> followersList = [];
+    List<String> followingList = [];
+    
+    if (data['followers'] != null) {
+      followersList = (data['followers'] as List<dynamic>)
+          .map((e) => e.toString())
+          .toList();
+    }
+    
+    if (data['following'] != null) {
+      followingList = (data['following'] as List<dynamic>)
+          .map((e) => e.toString())
+          .toList();
+    }
+    
     return UserModel(
       uid: doc.id,
       name: data['name'] ?? '',
       email: data['email'] ?? '',
       bio: data['bio'] ?? '',
-      followers: List<String>.from(data['followers'] ?? []),
-      following: List<String>.from(data['following'] ?? []),
+      followers: followersList,
+      following: followingList,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }

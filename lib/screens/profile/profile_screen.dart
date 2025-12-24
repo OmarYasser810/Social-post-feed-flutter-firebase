@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/firestore_service.dart';
+import 'package:social_post_feed/models/user_model.dart';
+import 'package:social_post_feed/services/auth_service.dart';
+import 'package:social_post_feed/services/firestore_service.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -308,6 +308,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
+    if (!mounted) return;
+    
     setState(() => _isLoading = false);
 
     if (success) {

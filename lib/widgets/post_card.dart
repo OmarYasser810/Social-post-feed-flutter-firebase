@@ -53,6 +53,8 @@ class _PostCardState extends State<PostCard> {
       success = await _firestoreService.likePost(post.id, _currentUserId!);
     }
 
+    if (!mounted) return;
+    
     setState(() => _isLiking = false);
 
     if (!success) {

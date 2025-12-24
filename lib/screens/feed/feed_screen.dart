@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:social_post_feed/screens/feed/create_post_screen.dart';
 import 'package:social_post_feed/screens/profile/profile_screen.dart';
 import 'package:social_post_feed/services/firestore_service.dart';
+import 'package:social_post_feed/widgets/post_card.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({Key? key}) : super(key: key);
@@ -12,11 +13,10 @@ class FeedScreen extends StatefulWidget {
   State<FeedScreen> createState() => _FeedScreenState();
 }
 
-class _FeedScreenState extends State<FeedScreen>
-    with SingleTickerProviderStateMixin {
+class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateMixin {
   final _firestoreService = FirestoreService();
   final _currentUserId = FirebaseAuth.instance.currentUser?.uid;
-
+  
   late TabController _tabController;
   List<String> _followingIds = [];
   bool _isLoadingFollowing = true;
@@ -35,14 +35,34 @@ class _FeedScreenState extends State<FeedScreen>
   }
 
   Future<void> _loadFollowing() async {
-    if (_currentUserId == null) return;
+    if (_currentUserId == null) {
+      setState(() => _isLoadingFollowing = false);
+      return;
+    }
 
-    final user = await _firestoreService.getUser(_currentUserId!);
-    if (user != null) {
-      setState(() {
-        _followingIds = user.following;
-        _isLoadingFollowing = false;
-      });
+    setState(() => _isLoadingFollowing = true);
+
+    try {
+      final user = await _firestoreService.getUser(_currentUserId!);
+      if (user != null && mounted) {
+        setState(() {
+          _followingIds = user.following;
+          _isLoadingFollowing = false;
+        });
+      } else if (mounted) {
+        setState(() {
+          _followingIds = [];
+          _isLoadingFollowing = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading following: $e');
+      if (mounted) {
+        setState(() {
+          _followingIds = [];
+          _isLoadingFollowing = false;
+        });
+      }
     }
   }
 
@@ -66,8 +86,7 @@ class _FeedScreenState extends State<FeedScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ProfileScreen(userId: _currentUserId!),
+                    builder: (context) => ProfileScreen(userId: _currentUserId!),
                   ),
                 );
               }
@@ -80,7 +99,7 @@ class _FeedScreenState extends State<FeedScreen>
         children: [
           // Public Feed Tab
           _buildPublicFeed(),
-
+          
           // Following Feed Tab
           _buildFollowingFeed(),
         ],
@@ -89,7 +108,9 @@ class _FeedScreenState extends State<FeedScreen>
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CreatePostScreen()),
+            MaterialPageRoute(
+              builder: (context) => CreatePostScreen(),
+            ),
           );
         },
         child: Icon(Icons.add),
@@ -152,8 +173,7 @@ class _FeedScreenState extends State<FeedScreen>
           child: ListView.builder(
             itemCount: posts.length,
             itemBuilder: (context, index) {
-              return;
-             // PostCard(postDoc: posts[index]);
+              return PostCard(postDoc: posts[index]);
             },
           ),
         );
@@ -169,29 +189,33 @@ class _FeedScreenState extends State<FeedScreen>
     // If not following anyone, show message
     if (_followingIds.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outline, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Not following anyone yet',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Follow users to see their posts here',
-              style: TextStyle(color: Colors.grey),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                _tabController.animateTo(0); // Switch to public feed
-              },
-              icon: Icon(Icons.public),
-              label: Text('Explore Public Feed'),
-            ),
-          ],
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.people_outline, size: 80, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'Not following anyone yet',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Follow users to see their posts here',
+                style: TextStyle(color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  _tabController.animateTo(0); // Switch to public feed
+                },
+                icon: Icon(Icons.public),
+                label: Text('Explore Public Feed'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -204,39 +228,51 @@ class _FeedScreenState extends State<FeedScreen>
         }
 
         if (snapshot.hasError) {
+          print('Following feed error: ${snapshot.error}');
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 60, color: Colors.red),
-                SizedBox(height: 16),
-                Text('Error loading feed'),
-                TextButton(
-                  onPressed: () => setState(() {}),
-                  child: Text('Retry'),
-                ),
-              ],
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 60, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text(
+                    'Error loading feed',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Pull down to retry',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           );
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.article_outlined, size: 80, color: Colors.grey),
-                SizedBox(height: 16),
-                Text(
-                  'No posts yet',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Users you follow haven\'t posted yet',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.article_outlined, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'No posts yet',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Users you follow haven\'t posted yet',
+                    style: TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -250,7 +286,7 @@ class _FeedScreenState extends State<FeedScreen>
           child: ListView.builder(
             itemCount: posts.length,
             itemBuilder: (context, index) {
-              return; //PostCard(postDoc: posts[index]);
+              return PostCard(postDoc: posts[index]);
             },
           ),
         );

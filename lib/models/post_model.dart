@@ -20,12 +20,21 @@ class PostModel {
   // Create PostModel from Firestore document
   factory PostModel.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    
+    // Safely convert likes list
+    List<String> likesList = [];
+    if (data['likes'] != null) {
+      likesList = (data['likes'] as List<dynamic>)
+          .map((e) => e.toString())
+          .toList();
+    }
+    
     return PostModel(
       id: doc.id,
       userId: data['userId'] ?? '',
       userName: data['userName'] ?? '',
       text: data['text'] ?? '',
-      likes: List<String>.from(data['likes'] ?? []),
+      likes: likesList,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }

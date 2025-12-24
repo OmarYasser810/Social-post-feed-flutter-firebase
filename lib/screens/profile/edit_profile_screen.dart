@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/user_model.dart';
-import '../../services/firestore_service.dart';
+import 'package:social_post_feed/models/user_model.dart';
+import 'package:social_post_feed/services/firestore_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -46,6 +46,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         bio: _bioController.text.trim(),
       );
 
+      if (!mounted) return;
+      
       setState(() => _isLoading = false);
 
       if (success) {

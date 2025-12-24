@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_service.dart';
+import 'package:social_post_feed/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -29,8 +29,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  // Check if passwords match
+  bool passwordsMatch() {
+    return _passwordController.text.trim() == 
+           _confirmPasswordController.text.trim();
+  }
+
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
+      // Double check passwords match
+      if (!passwordsMatch()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Passwords do not match'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       setState(() => _isLoading = true);
 
       final error = await _authService.register(
@@ -39,6 +56,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: _nameController.text.trim(),
       );
 
+      // Check if widget is still mounted before calling setState
+      if (!mounted) return;
+      
       setState(() => _isLoading = false);
 
       if (error != null) {
@@ -50,6 +70,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else {
         // Success - navigation handled by StreamBuilder
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context);
       }
     }

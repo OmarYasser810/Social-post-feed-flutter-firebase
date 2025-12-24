@@ -45,6 +45,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
       text: _commentController.text.trim(),
     );
 
+    if (!mounted) return;
+    
     setState(() => _isPosting = false);
 
     if (success) {
@@ -124,6 +126,26 @@ class _CommentsScreenState extends State<CommentsScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  print('Error loading comments: ${snapshot.error}');
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 60, color: Colors.red),
+                        SizedBox(height: 16),
+                        Text('Error loading comments'),
+                        SizedBox(height: 8),
+                        Text(
+                          snapshot.error.toString(),
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
