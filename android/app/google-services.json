@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "699196602170",
+    "project_id": "social-post-feed",
+    "storage_bucket": "social-post-feed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699196602170:android:6ec1f29918585cf31dc203",
+        "android_client_info": {
+          "package_name": "com.example.social_post_feed"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuXapPa0epvgtchuj3X0E5MjuDhYZjiCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
